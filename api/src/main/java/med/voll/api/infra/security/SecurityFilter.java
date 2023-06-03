@@ -39,7 +39,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 		}
 		
-		
+		System.out.println("passou por aqui");
 		filterChain.doFilter(request, response);
 		
 	}
