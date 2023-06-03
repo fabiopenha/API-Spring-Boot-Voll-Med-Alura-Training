@@ -25,6 +25,7 @@ import med.voll.api.domain.medico.DadosDetalhamentoMedico;
 import med.voll.api.domain.medico.DadosListagemMedico;
 import med.voll.api.domain.medico.Medico;
 import med.voll.api.domain.medico.MedicoRepository;
+import med.voll.api.domain.paciente.PacienteRepository;
 
 @RestController
 @RequestMapping("/medicos")
