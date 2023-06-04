@@ -5,8 +5,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.validation.Valid;
 import med.voll.api.domain.ValidacaoException;
 import med.voll.api.domain.consulta.validacoes.ValidadorAgendamentoDeConsulta;
+import med.voll.api.domain.consulta.validacoes.cancelamento.ValidadorCancelamentoConsulta;
 import med.voll.api.domain.medico.Medico;
 import med.voll.api.domain.medico.MedicoRepository;
 import med.voll.api.domain.paciente.PacienteRepository;
@@ -26,6 +28,9 @@ public class AgendaDeConsultas {
 	@Autowired
 	private List<ValidadorAgendamentoDeConsulta> validadores;
 	
+	@Autowired
+	private List<ValidadorCancelamentoConsulta>validadoresCancelamento;
+	
 	public DadosDetalhamentoConsulta agendar(DadosAgendamentoConsulta dados) {
 		if(!pacienteRepository.existsById(dados.idPaciente())) {
 			throw new ValidacaoException("Id do paciente informado não existe!");
@@ -43,12 +48,24 @@ public class AgendaDeConsultas {
 			throw new ValidacaoException("Não existe médico disponível nesta data.");
 		}
 		
-		var consulta = new Consulta(null, medico, paciente, dados.data());
+		var consulta = new Consulta(null, medico, paciente, dados.data(), null);
 		consultaRepository.save(consulta);
 		
 		return new DadosDetalhamentoConsulta(consulta);
 	}
 
+	public void cancelar(DadosCancelamentoConsulta dados) {
+		if(!consultaRepository.existsById(dados.idConsulta())) {
+			throw new ValidacaoException("Id da consulta informada não existe!");
+		}
+		
+		validadoresCancelamento.forEach(v -> v.validar(dados));
+		
+		var consulta = consultaRepository.getReferenceById(dados.idConsulta());
+		consulta.cancelar(dados.motivo());
+		
+	}
+	
 	private Medico escolherMedico(DadosAgendamentoConsulta dados) {
 		if (dados.idMedico() != null) {
 			return medicoRepository.getReferenceById(dados.idMedico());
@@ -60,4 +77,5 @@ public class AgendaDeConsultas {
 		
 		return medicoRepository.escolherMedicoAleatorioLivreNaData(dados.especialidade(), dados.data());
 	}
+
 }
